@@ -81,7 +81,7 @@ def carregar_imagem_caminho(caminho):
 
 # ===== FUNÇÕES PARA IMAGENS =====
 
-def encontrar_imagem(caminho_planilha, codigo):
+def encontrar_imagem_ultra(caminho_planilha, codigo):
     """
     Estratégia SUPER otimizada para encontrar imagens
     Retorna: (caminho_encontrado, imagem_object)
@@ -133,124 +133,78 @@ def encontrar_imagem(caminho_planilha, codigo):
     return None, None, "Nenhuma"
 
 def exibir_produto_com_imagem(row):
-    """Versão otimizada com lazy loading e cache"""
+    """Exibe produto com imagem e diagnóstico visual"""
     
-    # CSS único (carregar apenas uma vez)
-    if not st.session_state.css_carregado:
+    # Encontrar imagem
+    caminho, imagem, estrategia = encontrar_imagem_ultra(row['imagem'], row['codigo'])
+    
+    # Layout do card
+    with st.container():
         st.markdown("""
         <style>
-        .product-card {
+        .produto-card {
             border: 1px solid #ddd;
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 15px;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-            height: 100%;
-        }
-        .product-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        .status-estoque {
-            color: #2e7d32;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background-color: #e8f5e9;
-            display: inline-block;
-            font-size: 0.85em;
-            border: 1px solid #a5d6a7;
-        }
-        .status-acabou {
-            color: #c62828;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background-color: #ffebee;
-            display: inline-block;
-            font-size: 0.85em;
-            border: 1px solid #ef9a9a;
-        }
-        .product-image-container {
-            width: 100%;
-            height: 140px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px;
             margin-bottom: 10px;
+            background: white;
         }
-        .product-code {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #333;
-            margin: 5px 0;
-        }
-        .product-price {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin: 5px 0;
-        }
-        .product-store {
+        .diagnostico {
+            font-size: 10px;
             color: #666;
-            font-size: 0.9em;
-            margin: 5px 0;
-        }
-        .product-info {
-            padding: 5px 0;
+            margin-top: 5px;
+            padding: 2px;
+            background: #f5f5f5;
+            border-radius: 3px;
         }
         </style>
         """, unsafe_allow_html=True)
-        st.session_state.css_carregado = True
-    
-    # Usar session_state para cache de imagens carregadas
-    imagem_key = f"img_{row['codigo']}"
-    if imagem_key not in st.session_state:
-        with st.spinner(''):  # Spinner vazio para não mostrar loading
-            st.session_state[imagem_key] = encontrar_imagem(row['imagem'], row['codigo'])
-    
-    imagem = st.session_state[imagem_key]
-    
-    # Layout em card único
-    with st.container():
-        st.markdown('<div class="product-card">', unsafe_allow_html=True)
         
-        # Container da imagem
-        st.markdown('<div class="product-image-container">', unsafe_allow_html=True)
-        if imagem:
-            # Redimensionar para tamanho fixo
-            img_copy = imagem.copy()
-            img_copy.thumbnail((140, 140))
-            st.image(img_copy, use_column_width=True)
-        else:
-            st.markdown("""
-            <div style="width:100%; height:140px; display:flex; align-items:center; 
-                        justify-content:center; color:white; font-size:32px;">
-                📸
-            </div>
-            """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Card do produto
+        col1, col2 = st.columns([1, 2])
         
-        # Informações do produto
-        st.markdown(f'<div class="product-code">📦 {row["codigo"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="product-store">🏪 {row["loja"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="product-price">R$ {row["preco"]:.2f}</div>', unsafe_allow_html=True)
+        with col1:
+            if imagem:
+                # Redimensionar para tamanho padrão
+                img_copy = imagem.copy()
+                img_copy.thumbnail((150, 150))
+                st.image(img_copy, use_column_width=True)
+                
+                # Mostrar estratégia usada (diagnóstico)
+                st.markdown(f"<div class='diagnostico'>✅ {estrategia}</div>", 
+                          unsafe_allow_html=True)
+            else:
+                # Placeholder com informação
+                st.markdown("""
+                <div style="width:100%; height:120px; background:#f0f0f0; 
+                            border-radius:5px; display:flex; align-items:center; 
+                            justify-content:center; color:#999; font-size:12px;
+                            flex-direction:column;">
+                    <div style="font-size:24px;">📸</div>
+                    <div>Sem imagem</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Mostrar diagnóstico
+                st.markdown(f"""
+                <div class='diagnostico'>
+                    ❌ {estrategia}<br>
+                    Código: {row['codigo']}<br>
+                    Planilha: {row['imagem'] if pd.notna(row['imagem']) else 'vazio'}
+                </div>
+                """, unsafe_allow_html=True)
         
-        # Status
-        if row['status'].lower() == 'estoque':
-            st.markdown(f'<span class="status-estoque">✅ {row["quantidade"]} em estoque</span>', 
-                       unsafe_allow_html=True)
-        else:
-            st.markdown('<span class="status-acabou">❌ Acabou</span>', 
-                       unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"**📦 {row['codigo']}**")
+            st.markdown(f"🏪 {row['loja']}")
+            st.markdown(f"💰 **R$ {row['preco']:.2f}**")
+            
+            if row['status'].lower() == 'estoque':
+                st.markdown(f"✅ **Em estoque** ({int(row['quantidade'])} un)")
+            else:
+                st.markdown(f"❌ **Acabou**")
 
+            
 # ===== CARREGAR DADOS =====
 df = carregar_dados()
 

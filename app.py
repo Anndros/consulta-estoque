@@ -35,7 +35,7 @@ st.title("🔍 Consulta de Produtos por Loja")
 st.markdown("---")
 
 # Função para carregar dados com cache
-@st.cache_data(ttl=60)  # Atualiza a cada 60 segundos
+@st.cache_data(ttl=600)  # Atualiza a cada 60 segundos
 def carregar_dados():
     """Carrega os dados da planilha Excel"""
     caminho_planilha = os.path.join("dados", "catalogo.xlsx")

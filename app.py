@@ -19,12 +19,6 @@ st.sidebar.write(f"Python: {sys.version.split()[0]}")
 st.sidebar.write(f"Streamlit: {st.__version__}")
 st.sidebar.write(f"Pandas: {pd.__version__}")
 
-# Configuração da página
-st.set_page_config(
-    page_title="Consulta de Produtos",
-    page_icon="🔍",
-    layout="wide"
-)
 
 # Configurar caminhos
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

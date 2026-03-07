@@ -79,51 +79,58 @@ def carregar_imagem_caminho(caminho):
             return None
     return None
 
-def encontrar_imagem(caminho_imagem, codigo_produto):
-    """Versão otimizada com cache de caminhos"""
-    if pd.isna(caminho_imagem) or not caminho_imagem:
-        caminho_imagem = ""
+# ===== FUNÇÕES PARA IMAGENS =====
+
+def encontrar_imagem(caminho_planilha, codigo):
+    """
+    Estratégia SUPER otimizada para encontrar imagens
+    Retorna: (caminho_encontrado, imagem_object)
+    """
     
-    # Verificar se já encontramos esse caminho antes
-    cache_key = f"{codigo_produto}_{caminho_imagem}"
-    if cache_key in st.session_state.cache_caminhos:
-        caminho_encontrado = st.session_state.cache_caminhos[cache_key]
-        if caminho_encontrado and os.path.exists(caminho_encontrado):
-            return carregar_imagem_caminho(caminho_encontrado)
-        return None
+    # Se o caminho da planilha é NaN ou vazio
+    if pd.isna(caminho_planilha) or not caminho_planilha:
+        caminho_planilha = ""
     
-    # Lista prioritária de caminhos (mais prováveis primeiro)
-    possiveis_caminhos = []
+    # Lista de todas as estratégias
+    estrategias = []
     
-    # 1. Caminho direto na pasta imagens com nome do código
-    extensoes = ['.jpg', '.jpeg', '.png']
+    # ESTRATÉGIA 1: Caminho direto da planilha
+    if caminho_planilha and isinstance(caminho_planilha, str):
+        estrategias.append(("Direto da planilha", caminho_planilha))
+    
+    # ESTRATÉGIA 2: Nome do arquivo da planilha na pasta imagens
+    if caminho_planilha and isinstance(caminho_planilha, str):
+        nome_arquivo = os.path.basename(caminho_planilha)
+        estrategias.append(("Nome da planilha", os.path.join(IMAGENS_DIR, nome_arquivo)))
+    
+    # ESTRATÉGIA 3: Código do produto + extensões comuns
+    extensoes = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
     for ext in extensoes:
-        possiveis_caminhos.append(os.path.join(IMAGENS_DIR, f"{codigo_produto}{ext}"))
-        possiveis_caminhos.append(os.path.join(IMAGENS_DIR, f"{codigo_produto.lower()}{ext}"))
+        estrategias.append((f"Código{ext}", os.path.join(IMAGENS_DIR, f"{codigo}{ext}")))
+        estrategias.append((f"código lower{ext}", os.path.join(IMAGENS_DIR, f"{codigo.lower()}{ext}")))
     
-    # 2. Caminho da planilha
-    if caminho_imagem and isinstance(caminho_imagem, str):
-        possiveis_caminhos.append(caminho_imagem)
-        nome_arquivo = os.path.basename(caminho_imagem)
-        possiveis_caminhos.append(os.path.join(IMAGENS_DIR, nome_arquivo))
+    # ESTRATÉGIA 4: Código sem caracteres especiais
+    codigo_limpo = ''.join(e for e in codigo if e.isalnum())
+    for ext in extensoes:
+        estrategias.append((f"Código limpo{ext}", os.path.join(IMAGENS_DIR, f"{codigo_limpo}{ext}")))
     
-    # 3. Variações comuns
-    if codigo_produto:
-        codigo_limpo = codigo_produto.replace('-', '').replace('_', '')
-        for ext in extensoes:
-            possiveis_caminhos.append(os.path.join(IMAGENS_DIR, f"{codigo_limpo}{ext}"))
+    # ESTRATÉGIA 5: Procurar qualquer arquivo que contenha o código
+    if os.path.exists(IMAGENS_DIR):
+        for arquivo in os.listdir(IMAGENS_DIR):
+            if codigo.lower() in arquivo.lower() and arquivo.lower().endswith(tuple(extensoes)):
+                estrategias.append(("Contém código", os.path.join(IMAGENS_DIR, arquivo)))
+                break  # Pega só o primeiro
     
-    # Tentar cada caminho (limitado para economizar)
-    for caminho in possiveis_caminhos[:8]:  # Limitar tentativas
+    # Tentar cada estratégia
+    for nome_estrategia, caminho in estrategias:
         try:
             if os.path.exists(caminho):
-                st.session_state.cache_caminhos[cache_key] = caminho
-                return carregar_imagem_caminho(caminho)
+                img = Image.open(caminho)
+                return caminho, img, nome_estrategia
         except:
             continue
     
-    st.session_state.cache_caminhos[cache_key] = None
-    return None
+    return None, None, "Nenhuma"
 
 def exibir_produto_com_imagem(row):
     """Versão otimizada com lazy loading e cache"""

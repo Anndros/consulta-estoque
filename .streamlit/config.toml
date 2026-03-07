@@ -9,6 +9,13 @@ font = "sans serif"
 maxUploadSize = 200
 enableCORS = true
 enableXsrfProtection = true
+maxMessageSize = 200
 
 [browser]
 gatherUsageStats = false
+
+[runner]
+magicEnabled = false
+
+[logger]
+level = "error"

@@ -263,8 +263,8 @@ def exibir_produto_com_imagem(row):
             border: 1px solid #ef9a9a;
         }
         .product-image-container {
-            width: 100%;
-            height: 160px;
+            width: 500px;
+            height: 500px;
             display: flex;
             align-items: center;
             justify-content: center;

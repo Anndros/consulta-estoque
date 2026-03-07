@@ -2,7 +2,22 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import os
+import sys
 from datetime import datetime
+
+# Configuração da página - DEVE SER O PRIMEIRO COMANDO STREAMLIT
+st.set_page_config(
+    page_title="Consulta de Produtos",
+    page_icon="🔍",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Verificar versões das bibliotecas (útil para debug)
+st.sidebar.write("📦 Versões:")
+st.sidebar.write(f"Python: {sys.version.split()[0]}")
+st.sidebar.write(f"Streamlit: {st.__version__}")
+st.sidebar.write(f"Pandas: {pd.__version__}")
 
 # Configuração da página
 st.set_page_config(

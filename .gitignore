@@ -1,0 +1,30 @@
+# Ambiente virtual
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Streamlit local
+.streamlit/secrets.toml
+
+# Dados locais (opcional - se não quiser versionar a planilha)
+# dados/
+# imagens/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Sistema
+.DS_Store
+Thumbs.db

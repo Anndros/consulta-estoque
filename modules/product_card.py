@@ -212,26 +212,50 @@ def render_product_card(row, col_index):
         st.markdown(f'<div class="product-price">R$ {row["preco"]:.2f}</div>', unsafe_allow_html=True)
         
         # Status com quantidade - CORRIGIDO
-        if str(row['status']).lower() == 'estoque':
-            quantidade = int(row['quantidade']) if pd.notna(row['quantidade']) else 0
-            st.markdown(
-                f'<span class="status-estoque">'
-                f'<span class="quantity-icon">✅</span> '
-                f'{quantidade} unidade{"s" if quantidade != 1 else ""} em estoque'
-                f'</span>', 
-                unsafe_allow_html=True
-            )
+        status = str(row["status"]).lower().strip()
+        quantidade = row["quantidade"]
+
+        # Garantir que quantidade é um número inteiro
+
+        try:
+            if pd.isna(quantidade) or quantidade is None:
+                quantidade = 0
+            else:
+                quantidade = int(float(quantidade))
+        except:
+            quantidade = 0
+
+
+        if status == 'estoque':
+            if quantidade > 0:
+                st.markdown(
+                    f'<span class="status-estoque">'
+                    f'<span class="status-icon">✅</span> '
+                    f'<span>{quantidade} unidade{"s" if quantidade != 1 else ""} em estoque</span>'
+                    f'<span class="quantity-number">{quantidade}</span>'
+                    f'</span>', 
+                    unsafe_allow_html=True
+                )
+            else:
+                st.markdown(
+                    f'<span class="status-estoque">'
+                    f'<span class="status-icon">⚠️</span> '
+                    f'<span>Estoque zerado</span>'
+                    f'</span>', 
+                    unsafe_allow_html=True
+                )
         else:
             st.markdown(
                 '<span class="status-acabou">'
-                '<span class="quantity-icon">❌</span> '
-                'Acabou'
+                '<span class="status-icon">❌</span> '
+                '<span>Produto esgotado</span>'
                 '</span>', 
                 unsafe_allow_html=True
             )
         
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
 
 def render_product_grid(df_paginado):
     """

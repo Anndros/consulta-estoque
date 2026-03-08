@@ -50,6 +50,7 @@ def carregar_dados():
         # Converter imagem para string
         df['imagem'] = df['imagem'].fillna('').astype(str)
         
+
         return df
     except Exception as e:
         st.error(f"Erro ao carregar planilha: {e}")
@@ -95,3 +96,4 @@ def criar_dados_exemplo():
         img.save(os.path.join(IMAGENS_DIR, f"{codigo}.jpg"), quality=95)
     
     return True
+

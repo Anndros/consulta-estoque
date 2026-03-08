@@ -12,8 +12,8 @@ DADOS_DIR = os.path.join(BASE_DIR, "dados")
 
 # Configurações de imagem
 SUPPORTED_IMAGES = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
-IMAGEM_TAMANHO_PADRAO = (300, 300)  # Largura, Altura
-IMAGEM_QUALIDADE = 85
+IMAGEM_TAMANHO_PADRAO = (200, 200)  # Aumentado para melhor qualidade
+IMAGEM_QUALIDADE = 95  # Qualidade aumentada
 
 # Configurações de cache
 CACHE_TTL_DADOS = 300  # 5 minutos

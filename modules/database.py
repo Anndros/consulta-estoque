@@ -1,11 +1,11 @@
 """
 Módulo de banco de dados - Carregamento e cache da planilha
 """
-
 import streamlit as st
 import pandas as pd
 import os
 from .config import DADOS_DIR, CACHE_TTL_DADOS
+import numpy as np
 
 @st.cache_data(ttl=CACHE_TTL_DADOS, show_spinner="Carregando dados...")
 def carregar_dados():
@@ -32,9 +32,23 @@ def carregar_dados():
                 else:
                     df[col] = ''
         
-        # Converter tipos
-        df['preco'] = pd.to_numeric(df['preco'], errors='coerce').fillna(0)
+        # Converter tipos com tratamento de NaN
+        df['preco'] = pd.to_numeric(df['preco'], errors='coerce').fillna(0).astype(float)
+        
+        # Converter quantidade garantindo que seja int e não NaN
         df['quantidade'] = pd.to_numeric(df['quantidade'], errors='coerce').fillna(0).astype(int)
+        
+        # Converter status para string e tratar NaN
+        df['status'] = df['status'].fillna('').astype(str).str.lower()
+        
+        # Converter loja para string
+        df['loja'] = df['loja'].fillna('').astype(str)
+        
+        # Converter codigo para string
+        df['codigo'] = df['codigo'].fillna('').astype(str)
+        
+        # Converter imagem para string
+        df['imagem'] = df['imagem'].fillna('').astype(str)
         
         return df
     except Exception as e:
@@ -45,7 +59,7 @@ def criar_dados_exemplo():
     """
     Cria dados de exemplo para teste
     """
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageFont
     
     dados_exemplo = {
         'loja': ['Loja Centro', 'Loja Shopping', 'Loja Centro', 'Loja Norte', 'Loja Sul'],
@@ -57,14 +71,27 @@ def criar_dados_exemplo():
     }
     
     df_exemplo = pd.DataFrame(dados_exemplo)
+    
+    # Garantir que a pasta existe
+    os.makedirs(DADOS_DIR, exist_ok=True)
     df_exemplo.to_excel(os.path.join(DADOS_DIR, "catalogo.xlsx"), index=False)
     
-    # Criar imagens exemplo
+    # Criar imagens exemplo com melhor qualidade
     from .config import IMAGENS_DIR
-    for codigo in ['PROD-001', 'PROD-002', 'PROD-003']:
-        img = Image.new('RGB', (300, 300), color=(100, 150, 200))
+    os.makedirs(IMAGENS_DIR, exist_ok=True)
+    
+    for i, codigo in enumerate(['PROD-001', 'PROD-002', 'PROD-003']):
+        # Criar imagem com fundo gradiente
+        img = Image.new('RGB', (300, 300), color=(100 + i*30, 150, 200))
         d = ImageDraw.Draw(img)
-        d.text((100, 150), codigo, fill=(255, 255, 255))
-        img.save(os.path.join(IMAGENS_DIR, f"{codigo}.jpg"))
+        
+        # Desenhar um retângulo decorativo
+        d.rectangle([50, 50, 250, 250], outline=(255, 255, 255), width=3)
+        
+        # Adicionar texto
+        d.text((80, 140), codigo, fill=(255, 255, 255))
+        
+        # Salvar com qualidade
+        img.save(os.path.join(IMAGENS_DIR, f"{codigo}.jpg"), quality=95)
     
     return True

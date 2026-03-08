@@ -7,7 +7,7 @@ import os
 import numpy as np
 from .config import DADOS_DIR, CACHE_TTL_DADOS
 
-@st.cache_data(ttl=CACHE_TTL_DADOS, show_spinner="Carregando dados...")
+@st.cache_data(ttl=300, show_spinner="Carregando dados...")
 def carregar_dados():
     """
     Carrega os dados da planilha Excel com cache
@@ -20,75 +20,23 @@ def carregar_dados():
         return pd.DataFrame()
     
     try:
-        # Carregar planilha mantendo os tipos originais
-        df = pd.read_excel(caminho_planilha, dtype={
-            'loja': str,
-            'codigo': str,
-            'imagem': str,
-            'preco': float,
-            'status': str,
-            'quantidade': int  # Forçar tipo inteiro
-        })
+          # Carregar SEM modificações
+        df = pd.read_excel(caminho_planilha)
         
-        # Verificar se as colunas necessárias existem
+        # APENAS garantir que as colunas existem
         colunas_necessarias = ['loja', 'codigo', 'imagem', 'preco', 'status', 'quantidade']
-        colunas_existentes = df.columns.tolist()
-        
+
         for col in colunas_necessarias:
-            if col not in colunas_existentes:
-                if col == 'quantidade':
-                    df[col] = 0
-                elif col == 'preco':
-                    df[col] = 0.0
-                else:
-                    df[col] = ''
+            if col not in df.columns:
+                df[col] = 0 if col in ['preco', 'quantidade'] else ''
         
-        # CONVERSÕES CORRIGIDAS
-        # Preço
-        if 'preco' in df.columns:
-            df['preco'] = pd.to_numeric(df['preco'], errors='coerce').fillna(0).astype(float)
-        
-        # QUANTIDADE - CORREÇÃO PRINCIPAL
-        if 'quantidade' in df.columns:
-            # Primeiro, converter para numérico, tratando erros
-            df['quantidade'] = pd.to_numeric(df['quantidade'], errors='coerce')
-            # Depois, preencher NaN com 0
-            df['quantidade'] = df['quantidade'].fillna(0)
-            # Por fim, converter para inteiro
-            df['quantidade'] = df['quantidade'].astype(int)
-        else:
-            df['quantidade'] = 0
-        
-        # Status - garantir string e lower case
-        if 'status' in df.columns:
-            df['status'] = df['status'].fillna('').astype(str).str.lower().str.strip()
-            # Mapear variações comuns
-            df['status'] = df['status'].replace({
-                'em estoque': 'estoque',
-                'em_estoque': 'estoque',
-                'disponivel': 'estoque',
-                'disponível': 'estoque',
-                'acabou': 'acabou',
-                'esgotado': 'acabou',
-                'vendido': 'acabou'
-            })
-            # Se vazio, definir como 'acabou'
-            df.loc[df['status'] == '', 'status'] = 'acabou'
-        
-        # Loja
-        if 'loja' in df.columns:
-            df['loja'] = df['loja'].fillna('').astype(str)
-        
-        # Código
-        if 'codigo' in df.columns:
-            df['codigo'] = df['codigo'].fillna('').astype(str)
-        
-        # Imagem
-        if 'imagem' in df.columns:
-            df['imagem'] = df['imagem'].fillna('').astype(str)
+        # CONVERSÃO MÍNIMA
+        df['quantidade'] = df['quantidade'].fillna(0).astype(int)
+        df['preco'] = df['preco'].fillna(0).astype(float)
+        df['status'] = df['status'].fillna('').astype(str).str.lower()
         
         return df
-        
+
     except Exception as e:
         st.error(f"Erro ao carregar planilha: {e}")
         return pd.DataFrame()

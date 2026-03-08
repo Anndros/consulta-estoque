@@ -9,8 +9,9 @@ from modules.database import carregar_dados, criar_dados_exemplo
 from modules.image_handler import image_handler
 from modules.ui_components import sidebar_filtros, metricas_produtos, rodape
 from modules.filters import aplicar_filtros, paginar_dados
-from modules.product_card import render_product_grid
+from modules.product_card import render_product_grid, render_product_grid
 from modules.utils import inicializar_session_state, reset_paginacao, diagnosticar_sistema
+
 
 
 

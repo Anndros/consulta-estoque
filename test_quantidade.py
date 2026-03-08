@@ -1,63 +1,56 @@
-# diagnostico.py
+# teste_direto.py
 import streamlit as st
-from modules.database import carregar_dados, verificar_dados, criar_dados_exemplo
 import pandas as pd
+import os
 
-st.set_page_config(page_title="Diagnóstico", page_icon="🔧")
-st.title("🔧 Diagnóstico do Banco de Dados")
+st.set_page_config(page_title="Teste Direto", page_icon="🔴")
+st.title("🔴 TESTE DIRETO - SEM MÓDULOS")
 
-# Botão para recriar dados
-if st.button("🔄 Recriar dados de exemplo"):
-    if criar_dados_exemplo():
-        st.success("Dados de exemplo recriados!")
-        st.cache_data.clear()
-        st.rerun()
+# CARREGAR DIRETAMENTE
+caminho = "dados/catalogo.xlsx"
 
-# Carregar e mostrar dados
-df = carregar_dados()
-
-if not df.empty:
-    st.success(f"✅ Dados carregados: {len(df)} linhas")
+if os.path.exists(caminho):
+    st.success(f"Arquivo encontrado: {caminho}")
     
-    # Mostrar dados brutos
-    with st.expander("📊 Ver dados brutos", expanded=True):
-        st.dataframe(df, use_container_width=True)
+    # Ler direto
+    df = pd.read_excel(caminho)
     
-    # Análise por status
-    st.subheader("📦 Análise por Status")
+    st.write("### Dados brutos da planilha:")
+    st.dataframe(df)
     
-    for status in df['status'].unique():
-        df_status = df[df['status'] == status]
-        st.write(f"**{status.upper()}:** {len(df_status)} produtos")
-        
-        if status == 'estoque':
-            st.write(f"- Total em estoque: {df_status['quantidade'].sum()} unidades")
-            st.write(f"- Média por produto: {df_status['quantidade'].mean():.1f} unidades")
-            st.write(f"- Mínimo: {df_status['quantidade'].min()}")
-            st.write(f"- Máximo: {df_status['quantidade'].max()}")
+    st.write("### Tipos dos dados:")
+    st.write(df.dtypes)
     
-    # Verificar tipos
-    st.subheader("🔤 Tipos das Colunas")
-    tipos = pd.DataFrame({
-        'Coluna': df.columns,
-        'Tipo': df.dtypes.values,
-        'Exemplo': [df[col].iloc[0] if len(df) > 0 else '' for col in df.columns]
-    })
-    st.dataframe(tipos)
+    st.write("### Valores de quantidade:")
+    for idx, row in df.iterrows():
+        st.write(f"**{row['codigo']}**")
+        st.write(f"- Valor: {row['quantidade']}")
+        st.write(f"- Tipo: {type(row['quantidade'])}")
+        st.write(f"- Int convertido: {int(row['quantidade'])}")
+        st.write("---")
     
-    # Botão para testar card
-    if st.button("🃏 Testar Card do Produto"):
-        st.subheader("Preview do Primeiro Produto")
-        from modules.product_card import render_product_card
-        
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            render_product_card(df.iloc[0], 0)
-    
+    # Teste com st.metric
+    st.write("### Teste com st.metric:")
+    for idx, row in df.iterrows():
+        st.metric(
+            label=f"{row['codigo']}",
+            value=f"{row['quantidade']} unidades",
+            delta=None
+        )
 else:
-    st.error("❌ Nenhum dado carregado")
+    st.error("Arquivo não encontrado")
     
-    if st.button("📝 Criar dados de exemplo agora"):
-        if criar_dados_exemplo():
-            st.success("Dados criados!")
-            st.rerun()
+    # Criar arquivo de teste
+    if st.button("Criar arquivo de teste"):
+        dados = {
+            'loja': ['Loja A', 'Loja B'],
+            'codigo': ['TESTE-01', 'TESTE-02'],
+            'imagem': ['', ''],
+            'preco': [100.0, 200.0],
+            'status': ['estoque', 'acabou'],
+            'quantidade': [42, 0]
+        }
+        df_teste = pd.DataFrame(dados)
+        os.makedirs("dados", exist_ok=True)
+        df_teste.to_excel("dados/catalogo.xlsx", index=False)
+        st.success("Arquivo criado! Atualize a página.")

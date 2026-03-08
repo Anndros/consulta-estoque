@@ -10,17 +10,17 @@ from .config import COLUNAS_GRID
 
 def render_product_card(row, col_index):
     """
-    Renderiza um card de produto com tamanho fixo e qualidade preservada
+    Renderiza um card de produto com tamanho fixo
     """
     # Encontrar imagem
     caminho, imagem, base64_str, estrategia = image_handler.encontrar_imagem(
         row['imagem'], row['codigo']
     )
     
-    # CSS específico para cards - CORRIGIDO
+    # CSS específico para cards
     st.markdown("""
     <style>
-    /* Container principal do card */
+                
     .product-card {
         border: 1px solid #e0e0e0;
         border-radius: 12px;
@@ -32,64 +32,33 @@ def render_product_card(row, col_index):
         display: flex;
         flex-direction: column;
         margin-bottom: 20px;
-        position: relative;
-        overflow: hidden;
+                
     }
-    
+                
     .product-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    
-    /* Container da imagem - TAMANHO FIXO E CENTRALIZADO */
     .product-image-container {
         width: 100%;
-        height: 200px;  /* Altura fixa */
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
         border-radius: 8px;
-        background: #f8f9fa;  /* Fundo neutro */
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         margin-bottom: 12px;
-        position: relative;
     }
-    
-    /* Imagem - MANTÉM NITIDEZ E PROPORÇÃO */
     .product-image {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain;  /* Mantém proporção sem cortar */
-        transition: transform 0.3s;
-        display: block;
-    }
-    
-    .product-image:hover {
-        transform: scale(1.02);
-    }
-    
-    /* Placeholder quando não há imagem */
-    .product-image-placeholder {
         width: 100%;
         height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-size: 48px;
-        border-radius: 8px;
+        object-fit: cover;
+        transition: transform 0.3s;
     }
-    
-    /* Informações do produto */
-    .product-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+    .product-image:hover {
+        transform: scale(1.05);
     }
-    
     .product-code {
         font-size: 1.1em;
         font-weight: 600;
@@ -99,62 +68,36 @@ def render_product_card(row, col_index):
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
     .product-store {
         color: #7f8c8d;
         font-size: 0.9em;
         margin: 4px 0;
-        display: flex;
-        align-items: center;
-        gap: 4px;
     }
-    
     .product-price {
         font-size: 1.4em;
         font-weight: 700;
         color: #2c3e50;
         margin: 8px 0;
     }
-    
-    /* Status - CORRIGIDO PARA MOSTRAR QUANTIDADE */
     .status-estoque {
         color: #2e7d32;
         font-weight: 600;
-        padding: 6px 12px;
+        padding: 4px 12px;
         border-radius: 20px;
         background-color: #e8f5e9;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9em;
+        display: inline-block;
+        font-size: 0.85em;
         border: 1px solid #a5d6a7;
-        width: fit-content;
     }
-    
     .status-acabou {
         color: #c62828;
         font-weight: 600;
-        padding: 6px 12px;
+        padding: 4px 12px;
         border-radius: 20px;
         background-color: #ffebee;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9em;
+        display: inline-block;
+        font-size: 0.85em;
         border: 1px solid #ef9a9a;
-        width: fit-content;
-    }
-    
-    /* Ícone de quantidade */
-    .quantity-icon {
-        font-size: 1em;
-        margin-right: 2px;
-    }
-    
-    /* Remover qualquer elemento estranho */
-    .product-card::before,
-    .product-card::after {
-        display: none;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -166,116 +109,50 @@ def render_product_card(row, col_index):
         # Container da imagem
         st.markdown('<div class="product-image-container">', unsafe_allow_html=True)
         
-        # Exibir imagem com qualidade preservada
         if base64_str:
-            # Usar base64 para garantir qualidade
             ext = os.path.splitext(caminho)[1][1:] if caminho else 'jpg'
             st.markdown(
-                f'<img src="data:image/{ext};base64,{base64_str}" class="product-image" alt="{row["codigo"]}">',
+                f'<img src="data:image/{ext};base64,{base64_str}" class="product-image">',
                 unsafe_allow_html=True
             )
         elif imagem:
-            # Redimensionar mantendo proporção e qualidade
-            try:
-                # Calcular proporção para manter qualidade
-                img_copy = imagem.copy()
-                
-                # Usar LANCZOS para melhor qualidade no redimensionamento
-                img_copy.thumbnail((200, 200), Image.Resampling.LANCZOS)
-                
-                # Salvar temporariamente para exibir com qualidade
-                st.image(img_copy, use_column_width=True, output_format="PNG")
-            except Exception as e:
-                st.markdown("""
-                <div class="product-image-placeholder">
-                    📸
-                </div>
-                """, unsafe_allow_html=True)
+            img_redimensionada = image_handler.redimensionar_imagem(imagem)
+            st.image(img_redimensionada, use_column_width=True)
         else:
-            # Placeholder
             st.markdown("""
-            <div class="product-image-placeholder">
+            <div style="width:100%; height:100%; display:flex; align-items:center; 
+                        justify-content:center; color:white; font-size:32px;">
                 📸
             </div>
             """, unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # Informações do produto
-        st.markdown('<div class="product-info">', unsafe_allow_html=True)
-        
-        # Código e loja
+        # Informações
         st.markdown(f'<div class="product-code">📦 {row["codigo"]}</div>', unsafe_allow_html=True)
         st.markdown(f'<div class="product-store">🏪 {row["loja"]}</div>', unsafe_allow_html=True)
-        
-        # Preço
         st.markdown(f'<div class="product-price">R$ {row["preco"]:.2f}</div>', unsafe_allow_html=True)
         
-        # Status com quantidade - CORRIGIDO
-        status = str(row["status"]).lower().strip()
-        quantidade = row["quantidade"]
-
-        # Garantir que quantidade é um número inteiro
-
-        try:
-            if pd.isna(quantidade) or quantidade is None:
-                quantidade = 0
-            else:
-                quantidade = int(float(quantidade))
-        except:
-            quantidade = 0
-
-
-        if status == 'estoque':
-            if quantidade > 0:
-                st.markdown(
-                    f'<span class="status-estoque">'
-                    f'<span class="status-icon">✅</span> '
-                    f'<span>{quantidade} unidade{"s" if quantidade != 1 else ""} em estoque</span>'
-                    f'<span class="quantity-number">{quantidade}</span>'
-                    f'</span>', 
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown(
-                    f'<span class="status-estoque">'
-                    f'<span class="status-icon">⚠️</span> '
-                    f'<span>Estoque zerado</span>'
-                    f'</span>', 
-                    unsafe_allow_html=True
-                )
+        if row['status'].lower() == 'estoque':
+            st.markdown(f'<span class="status-estoque">✅ {int(row["quantidade"])} em estoque</span>', 
+                       unsafe_allow_html=True)
         else:
-            st.markdown(
-                '<span class="status-acabou">'
-                '<span class="status-icon">❌</span> '
-                '<span>Produto esgotado</span>'
-                '</span>', 
-                unsafe_allow_html=True
-            )
+            st.markdown('<span class="status-acabou">❌ Acabou</span>', 
+                       unsafe_allow_html=True)
         
         st.markdown('</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
 
 def render_product_grid(df_paginado):
     """
-    Renderiza grid de produtos com espaçamento consistente
+    Renderiza grid de produtos
     """
-    if df_paginado.empty:
-        return
-    
     num_colunas = 4
     
-    # Container do grid
-    st.markdown('<div class="product-grid">', unsafe_allow_html=True)
-    
     for i in range(0, len(df_paginado), num_colunas):
-        cols = st.columns(num_colunas, gap="medium")
+        cols = st.columns(num_colunas)
         
         for j in range(num_colunas):
             idx = i + j
             if idx < len(df_paginado):
                 with cols[j]:
                     render_product_card(df_paginado.iloc[idx], j)
-    
-    st.markdown('</div>', unsafe_allow_html=True)

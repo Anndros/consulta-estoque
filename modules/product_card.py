@@ -29,7 +29,7 @@ def render_product_card(row, col_index):
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         transition: transform 0.2s, box-shadow 0.2s;
         height: 100%;
-        display: flex;
+        display: none;
         flex-direction: column;
         margin-bottom: 20px;
                 
@@ -41,7 +41,7 @@ def render_product_card(row, col_index):
     }
     .product-image-container {
         width: 100%;
-        height: 180px;
+        height: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -52,8 +52,9 @@ def render_product_card(row, col_index):
     }
     .product-image {
         width: 100%;
-        height: 100%;
+        height: 400px;
         object-fit: cover;
+        diplay: block; /* inclusão feita por mim - teste */
         transition: transform 0.3s;
     }
     .product-image:hover {

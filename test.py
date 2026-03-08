@@ -20,6 +20,10 @@ if os.path.exists(caminho):
     
     st.write("### Tipos dos dados:")
     st.write(df.dtypes)
+
+     # Test de calculo com coluna quantidade
+    st.write("### Teste de cálculo")
+    st.write(df['quantidade'] * df['preco'])
     
     st.write("### Valores de quantidade:")
     for idx, row in df.iterrows():
@@ -29,6 +33,11 @@ if os.path.exists(caminho):
         st.write(f"- Int convertido: {int(row['quantidade'])}")
         st.write("---")
     
+    # Test de calculo com coluna quantidade
+    st.write("### Teste de cálculo")
+    st.write(f"row['quantidade'] * row['preco']")
+
+
     # Teste com st.metric
     st.write("### Teste com st.metric:")
     for idx, row in df.iterrows():

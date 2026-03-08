@@ -32,22 +32,22 @@ def carregar_dados():
                 else:
                     df[col] = ''
         
-        # Converter tipos com tratamento de NaN
+         # Converter tipos com tratamento especial para quantidade
         df['preco'] = pd.to_numeric(df['preco'], errors='coerce').fillna(0).astype(float)
         
-        # Converter quantidade garantindo que seja int e não NaN
-        df['quantidade'] = pd.to_numeric(df['quantidade'], errors='coerce').fillna(0).astype(int)
+        # IMPORTANTE: Garantir que quantidade é int e nunca NaN
+        df['quantidade'] = pd.to_numeric(df['quantidade'], errors='coerce')
+        df['quantidade'] = df['quantidade'].fillna(0).astype(int)
         
-        # Converter status para string e tratar NaN
-        df['status'] = df['status'].fillna('').astype(str).str.lower()
+        # Converter status para string e garantir lower case
+        df['status'] = df['status'].fillna('').astype(str).str.lower().str.strip()
         
-        # Converter loja para string
+        # Se status estiver vazio, definir como 'acabou' por padrão
+        df.loc[df['status'] == '', 'status'] = 'acabou'
+        
+        # Converter outras colunas para string
         df['loja'] = df['loja'].fillna('').astype(str)
-        
-        # Converter codigo para string
         df['codigo'] = df['codigo'].fillna('').astype(str)
-        
-        # Converter imagem para string
         df['imagem'] = df['imagem'].fillna('').astype(str)
         
 

@@ -1,65 +1,36 @@
-# teste_direto.py
+# debug_import.py
 import streamlit as st
-import pandas as pd
-import os
 
-st.set_page_config(page_title="Teste Direto", page_icon="🔴")
-st.title("🔴 TESTE DIRETO - SEM MÓDULOS")
+print("=" * 50)
+print("🔍 DEBUG DE IMPORTAÇÃO")
+print("=" * 50)
 
-# CARREGAR DIRETAMENTE
-caminho = "dados/catalogo.xlsx"
+print(f"1. st.session_state antes de qualquer import: {list(st.session_state.keys())}")
 
-if os.path.exists(caminho):
-    st.success(f"Arquivo encontrado: {caminho}")
-    
-    # Ler direto
-    df = pd.read_excel(caminho)
-    
-    st.write("### Dados brutos da planilha:")
-    st.dataframe(df)
-    
-    st.write("### Tipos dos dados:")
-    st.write(df.dtypes)
+print("\n2. Importando módulos...")
+from modules.config import *
+print("   ✅ config importado")
 
-     # Test de calculo com coluna quantidade
-    st.write("### Teste de cálculo")
-    st.write(df['quantidade'] * df['preco'])
-    
-    st.write("### Valores de quantidade:")
-    for idx, row in df.iterrows():
-        st.write(f"**{row['codigo']}**")
-        st.write(f"- Valor: {row['quantidade']}")
-        st.write(f"- Tipo: {type(row['quantidade'])}")
-        st.write(f"- Int convertido: {int(row['quantidade'])}")
-        st.write("---")
-    
-    # Test de calculo com coluna quantidade
-    st.write("### Teste de cálculo")
-    st.write(f"row['quantidade'] * row['preco']")
+from modules.database import *
+print("   ✅ database importado")
 
+print("   ⚠️ Importando image_handler...")
+from modules.image_handler import image_handler
+print("   ✅ image_handler importado")
 
-    # Teste com st.metric
-    st.write("### Teste com st.metric:")
-    for idx, row in df.iterrows():
-        st.metric(
-            label=f"{row['codigo']}",
-            value=f"{row['quantidade']} unidades",
-            delta=None
-        )
+print(f"\n3. st.session_state depois dos imports: {list(st.session_state.keys())}")
+
+print("\n4. Verificando cache_caminhos:")
+if 'cache_caminhos' in st.session_state:
+    print(f"   ✅ cache_caminhos existe: {type(st.session_state.cache_caminhos)}")
 else:
-    st.error("Arquivo não encontrado")
-    
-    # Criar arquivo de teste
-    if st.button("Criar arquivo de teste"):
-        dados = {
-            'loja': ['Loja A', 'Loja B'],
-            'codigo': ['TESTE-01', 'TESTE-02'],
-            'imagem': ['', ''],
-            'preco': [100.0, 200.0],
-            'status': ['estoque', 'acabou'],
-            'quantidade': [42, 0]
-        }
-        df_teste = pd.DataFrame(dados)
-        os.makedirs("dados", exist_ok=True)
-        df_teste.to_excel("dados/catalogo.xlsx", index=False)
-        st.success("Arquivo criado! Atualize a página.")
+    print("   ❌ cache_caminhos NÃO existe")
+
+print("\n5. Testando acesso direto:")
+try:
+    test = st.session_state.cache_caminhos
+    print("   ✅ Acesso direto OK")
+except Exception as e:
+    print(f"   ❌ Erro no acesso direto: {e}")
+
+print("=" * 50)

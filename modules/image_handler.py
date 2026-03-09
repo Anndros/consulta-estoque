@@ -1,7 +1,6 @@
 """
 Módulo de gerenciamento de imagens - Busca, cache e processamento
 """
-
 import streamlit as st
 import os
 import pandas as pd
@@ -13,16 +12,26 @@ class ImageHandler:
     """Gerenciador de imagens com cache e preservação de qualidade"""
     
     def __init__(self):
-        # Garantir que session_state está pronto para uso
+        print("🔵 ImageHandler.__init__() iniciado")
         self._inicializar_session_state()
+        print("🟢 ImageHandler.__init__() concluído")
     
     def _inicializar_session_state(self):
         """Inicializa as variáveis no session_state de forma segura"""
+        print("🟡 Verificando session_state...")
+        print(f"   st.session_state atual: {list(st.session_state.keys()) if st.session_state else 'vazio'}")
+        
         if 'cache_imagens' not in st.session_state:
+            print("   🟠 cache_imagens não encontrado, inicializando...")
             st.session_state.cache_imagens = {}
+        else:
+            print("   ✅ cache_imagens já existe")
         
         if 'cache_caminhos' not in st.session_state:
+            print("   🟠 cache_caminhos não encontrado, inicializando...")
             st.session_state.cache_caminhos = {}
+        else:
+            print("   ✅ cache_caminhos já existe")
     
     def _get_cache_caminhos(self):
         """Retorna o cache de caminhos de forma segura"""
@@ -62,11 +71,13 @@ class ImageHandler:
         Encontra imagem em múltiplos locais com cache
         Retorna: (caminho, imagem, base64, estrategia)
         """
+        print(f"🔍 encontrar_imagem chamado para {codigo}")
         cache_caminhos = self._get_cache_caminhos()
         cache_key = f"{codigo}_{caminho_planilha}"
         
         # Verificar cache
         if cache_key in cache_caminhos:
+            print(f"   ✅ Cache encontrado para {codigo}")
             cached = cache_caminhos[cache_key]
             if cached and cached.get('caminho') and os.path.exists(cached['caminho']):
                 return (
@@ -82,12 +93,14 @@ class ImageHandler:
         else:
             caminho_planilha = str(caminho_planilha)
         
-        # Lista de estratégias em ordem de prioridade
+        # Lista de estratégias
         estrategias = self._gerar_estrategias(caminho_planilha, codigo)
+        print(f"   📋 Geradas {len(estrategias)} estratégias para {codigo}")
         
         # Tentar cada estratégia
         for nome_estrategia, caminho in estrategias:
             if caminho and os.path.exists(caminho):
+                print(f"   ✅ Estratégia '{nome_estrategia}' funcionou: {caminho}")
                 imagem = self._load_image_from_path(caminho)
                 base64_str = self._to_base64(caminho)
                 
@@ -101,10 +114,11 @@ class ImageHandler:
                 
                 return caminho, imagem, base64_str, nome_estrategia
         
+        print(f"   ❌ Nenhuma estratégia funcionou para {codigo}")
         return None, None, None, "Não encontrada"
     
     def _gerar_estrategias(self, caminho_planilha, codigo):
-        """Gera todas as possíveis estratégias de busca em ordem de prioridade"""
+        """Gera todas as possíveis estratégias de busca"""
         estrategias = []
         codigo = str(codigo)
         
@@ -170,4 +184,6 @@ class ImageHandler:
         return None
 
 # Instância global do gerenciador
+print("🔴 Criando instância global do ImageHandler")
 image_handler = ImageHandler()
+print("🟢 Instância global criada")

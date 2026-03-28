@@ -24,16 +24,41 @@ def carregar_dados():
         df = pd.read_excel(caminho_planilha)
         
         # APENAS garantir que as colunas existem
-        colunas_necessarias = ['loja', 'codigo', 'imagem', 'preco', 'status', 'quantidade']
+        colunas_necessarias = ['loja','peca' ,'codigo', 'imagem', 'preco', 'status', 'quantidade']
 
         for col in colunas_necessarias:
             if col not in df.columns:
                 df[col] = 0 if col in ['preco', 'quantidade'] else ''
         
         # CONVERSÃO MÍNIMA
-        df['quantidade'] = df['quantidade'].fillna(0).astype(int)
-        df['preco'] = df['preco'].fillna(0).astype(float)
-        df['status'] = df['status'].fillna('').astype(str).str.lower()
+        if 'quantidade' in df.columns:
+            df['quantidade'] = pd.to_numeric(df['quantidade'], errors='coerce').fillna(0).astype('int32')
+        
+        # Preço
+        if 'preco' in df.columns:
+            df['preco'] = pd.to_numeric(df['preco'], errors='coerce').fillna(0).astype(float)
+        
+        # Status
+        if 'status' in df.columns:
+            df['status'] = df['status'].fillna('').astype(str).str.lower().str.strip()
+        
+        # NOVO: Peça
+        if 'peca' in df.columns:
+            df['peca'] = df['peca'].fillna('').astype(str).str.strip()
+            # Se vazio, colocar "Não especificado"
+            df.loc[df['peca'] == '', 'peca'] = 'Não especificado'
+        
+        # Loja
+        if 'loja' in df.columns:
+            df['loja'] = df['loja'].fillna('').astype(str)
+        
+        # Código
+        if 'codigo' in df.columns:
+            df['codigo'] = df['codigo'].fillna('').astype(str)
+        
+        # Imagem
+        if 'imagem' in df.columns:
+            df['imagem'] = df['imagem'].fillna('').astype(str)
         
         return df
 
@@ -50,12 +75,13 @@ def criar_dados_exemplo():
     
     # Dados com quantidades variadas para teste
     dados_exemplo = {
-        'loja': ['Loja Centro', 'Loja Shopping', 'Loja Centro', 'Loja Norte', 'Loja Sul', 'Loja Centro'],
-        'codigo': ['PROD-001', 'PROD-002', 'PROD-003', 'PROD-004', 'PROD-005', 'PROD-006'],
-        'imagem': ['', '', '', '', '', ''],
-        'preco': [49.90, 89.90, 129.90, 59.90, 199.90, 34.90],
-        'status': ['estoque', 'estoque', 'acabou', 'estoque', 'acabou', 'estoque'],
-        'quantidade': [15, 8, 0, 3, 0, 1]  # Diferentes quantidades
+        'loja': ['Loja Centro', 'Loja Shopping', 'Loja Centro', 'Loja Norte', 'Loja Sul'],
+        'peca': ['Camiseta', 'Calça', 'Tênis', 'Camiseta', 'Boné'],  # NOVO CAMPO
+        'codigo': ['PROD-001', 'PROD-002', 'PROD-003', 'PROD-004', 'PROD-005'],
+        'imagem': ['', '', '', '', ''],
+        'preco': [49.90, 89.90, 129.90, 59.90, 34.90],
+        'status': ['estoque', 'estoque', 'acabou', 'estoque', 'estoque'],
+        'quantidade': [15, 8, 0, 3, 10]
     }
     
     df_exemplo = pd.DataFrame(dados_exemplo)

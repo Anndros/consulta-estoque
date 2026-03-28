@@ -16,7 +16,7 @@ IMAGEM_TAMANHO_PADRAO = (200, 200)  # Aumentado para melhor qualidade
 IMAGEM_QUALIDADE = 95  # Qualidade aumentada
 
 # Configurações de cache
-CACHE_TTL_DADOS = 300  # 5 minutos
+CACHE_TTL_DADOS = 600  # 10 minutos
 CACHE_TTL_IMAGENS = 3600  # 1 hora
 CACHE_MAX_ENTRIES = 100
 
@@ -26,3 +26,6 @@ COLUNAS_GRID = 4
 
 # Configurações de filtros
 STATUS_OPCOES = ['Todos', 'Em estoque', 'Acabou']
+
+# NOVA: Lista de tipos de peça (será preenchida dinamicamente)
+TODAS_PECAS = "Todas as peças"

@@ -2,6 +2,8 @@
 Módulo de filtros - Aplicação de filtros aos dados
 """
 import pandas as pd
+from .config import TODAS_PECAS
+
 
 def aplicar_filtros(df, filtros):
     """
@@ -12,6 +14,10 @@ def aplicar_filtros(df, filtros):
     
     df_filtrado = df.copy()
     
+    # NOVO: Filtro por peça
+    if filtros.get('peca') and filtros['peca'] != TODAS_PECAS:
+        df_filtrado = df_filtrado[df_filtrado['peca'] == filtros['peca']]
+
     # Filtro por loja
     if filtros['loja'] != "Todas":
         df_filtrado = df_filtrado[df_filtrado['loja'] == filtros['loja']]

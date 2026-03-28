@@ -4,6 +4,8 @@ Módulo de componentes UI - Elementos reutilizáveis da interface
 
 import streamlit as st
 from datetime import datetime
+from .config import TODAS_PECAS
+from .database import get_tipos_peca
 
 def sidebar_filtros(df, on_filter_change=None):
     """
@@ -17,6 +19,13 @@ def sidebar_filtros(df, on_filter_change=None):
             st.error("Nenhum dado carregado")
             return None
         
+        # NOVO: Filtro por Tipo de Peça
+        st.subheader("👕 Tipo de Peça")
+        tipos_peca = get_tipos_peca(df)
+        opcoes_peca = [TODAS_PECAS] + tipos_peca
+        peca_sel = st.selectbox("Selecione o tipo:", opcoes_peca, key='filtro_peca')
+
+
         # Filtro por Loja
         lojas = ['Todas'] + sorted(df['loja'].unique().tolist())
         loja_sel = st.selectbox("Selecione a Loja:", lojas, key='filtro_loja')
@@ -49,6 +58,7 @@ def sidebar_filtros(df, on_filter_change=None):
             st.rerun()
         
         return {
+            'peca': peca_sel,  # NOVO
             'loja': loja_sel,
             'status': status_sel,
             'preco_min': preco_inicial,
@@ -63,7 +73,7 @@ def metricas_produtos(df_filtrado):
     if df_filtrado.empty:
         return
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5) # Aumentado para 5 colunas
     
     with col1:
         st.metric("Total", len(df_filtrado))
@@ -79,6 +89,11 @@ def metricas_produtos(df_filtrado):
     with col4:
         qtd_total = df_filtrado['quantidade'].sum()
         st.metric("Unidades", int(qtd_total))
+
+    with col5:
+        # NOVO: Mostrar variedade de peças
+        variedade = df_filtrado['peca'].nunique() if 'peca' in df_filtrado.columns else 0
+        st.metric("Tipos de Peça", variedade)
     
     st.markdown("---")
 
